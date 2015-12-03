@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	getopt "code.google.com/p/getopt"
+	getopt "github.com/pborman/getopt"
 )
 
 var exclude = getopt.ListLong("exclude", 'x', "", "glob patterns to exclude")

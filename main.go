@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+       "net/http"
 
 	getopt "github.com/pborman/getopt"
 )
@@ -82,13 +83,37 @@ func main() {
 			}
 		}
 
-		resourceNameBytes := sha1.Sum([]byte(relPath))
-		resourceName := fmt.Sprintf("%x", resourceNameBytes)
+		// We hash the name and the contents of the file so that when the file changes
+		// terraform updates S3.  We include the name for the case the same contents
+		// are available along multiple paths.
+		file, err := os.Open(path)
+		if (err != nil) {
+		    fmt.Fprintf(os.Stderr, "Error opening %s: %s\n", path, err);
+		    return nil;
+		}
+		hasher := sha1.New()
+		fileBytes := make([]byte, 1024*1024)
+		bytesRead := 0
+		contentType := ""
+		for firstTime := true; firstTime || bytesRead == len(fileBytes); {
+		    bytesRead, err = file.Read(fileBytes)
+		    if err != nil {
+			fmt.Printf("%s\n", err);
+		    }
+		    if (firstTime) {
+			contentType = http.DetectContentType(fileBytes)
+			firstTime = false
+		    }
+		    hasher.Write(fileBytes)
+		}
+		hasher.Write([]byte(relPath))
+		resourceName := fmt.Sprintf("%x", hasher.Sum(nil))
 
 		resourcesMap[resourceName] = map[string]interface{}{
 			"bucket": bucketName,
 			"key":    relPath,
 			"source": path,
+			"content_type": contentType,
 		}
 
 		return nil

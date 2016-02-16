@@ -97,9 +97,6 @@ func main() {
 		contentType := ""
 		for firstTime := true; firstTime || bytesRead == len(fileBytes); {
 		    bytesRead, err = file.Read(fileBytes)
-		    if err != nil {
-			fmt.Printf("%s\n", err);
-		    }
 		    if (firstTime) {
 			contentType = http.DetectContentType(fileBytes)
 			firstTime = false

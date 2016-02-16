@@ -101,7 +101,13 @@ func main() {
 			fmt.Printf("%s\n", err);
 		    }
 		    if (firstTime) {
-			contentType = http.DetectContentType(fileBytes)
+			if strings.HasSuffix(relPath, ".svg") {
+			    // If we start to need a set of overrides for DetectContentType
+			    // then we need to find a different way to do this.
+			    contentType = "image/svg+xml"
+			} else {
+			    contentType = http.DetectContentType(fileBytes)
+			}
 			firstTime = false
 		    }
 		    hasher.Write(fileBytes)

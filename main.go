@@ -7,7 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-       "net/http"
+	"net/http"
+	"io"
 
 	getopt "github.com/pborman/getopt"
 )
@@ -97,8 +98,13 @@ func main() {
 		contentType := ""
 		for firstTime := true; firstTime || bytesRead == len(fileBytes); {
 		    bytesRead, err = file.Read(fileBytes)
-		    if err != nil {
-			fmt.Printf("%s\n", err);
+		    // If we got back and error and it isn't the end of file then
+		    // skip it.  This does "something" with 0 length files.  It is
+		    // likely we should really be categorizing those based on file
+		    // extension.
+		    if err != nil && err != io.EOF {
+			fmt.Fprintf(os.Stderr, "Error reading %s: %s\n", path, err);
+			return nil
 		    }
 		    if (firstTime) {
 			if strings.HasSuffix(relPath, ".svg") {

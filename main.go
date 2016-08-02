@@ -4,11 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"net/http"
-	"io"
 
 	getopt "github.com/pborman/getopt"
 )

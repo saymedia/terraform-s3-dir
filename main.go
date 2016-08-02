@@ -84,47 +84,43 @@ func main() {
 			}
 		}
 
-		// We hash the name and the contents of the file so that when the file changes
-		// terraform updates S3.  We include the name for the case the same contents
-		// are available along multiple paths.
+		// We use the initial bytes of the file to infer a MIME type
 		file, err := os.Open(path)
-		if (err != nil) {
-		    fmt.Fprintf(os.Stderr, "Error opening %s: %s\n", path, err);
-		    return nil;
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening %s: %s\n", path, err)
+			return nil
 		}
 		hasher := sha1.New()
 		fileBytes := make([]byte, 1024*1024)
-		bytesRead := 0
 		contentType := ""
-		for firstTime := true; firstTime || bytesRead == len(fileBytes); {
-		    bytesRead, err = file.Read(fileBytes)
-		    // If we got back and error and it isn't the end of file then
-		    // skip it.  This does "something" with 0 length files.  It is
-		    // likely we should really be categorizing those based on file
-		    // extension.
-		    if err != nil && err != io.EOF {
-			fmt.Fprintf(os.Stderr, "Error reading %s: %s\n", path, err);
+		_, err = file.Read(fileBytes)
+		// If we got back and error and it isn't the end of file then
+		// skip it.  This does "something" with 0 length files.  It is
+		// likely we should really be categorizing those based on file
+		// extension.
+		if err != nil && err != io.EOF {
+			fmt.Fprintf(os.Stderr, "Error reading %s: %s\n", path, err)
 			return nil
-		    }
-		    if (firstTime) {
-			if strings.HasSuffix(relPath, ".svg") {
-			    // If we start to need a set of overrides for DetectContentType
-			    // then we need to find a different way to do this.
-			    contentType = "image/svg+xml"
-			} else {
-			    contentType = http.DetectContentType(fileBytes)
-			}
-			firstTime = false
-		    }
-		    hasher.Write(fileBytes)
 		}
+		if strings.HasSuffix(relPath, ".svg") {
+			// If we start to need a set of overrides for DetectContentType
+			// then we need to find a different way to do this.
+			contentType = "image/svg+xml"
+		} else {
+			contentType = http.DetectContentType(fileBytes)
+		}
+
+		// Resource name is a hash of the path, so it should stay consistent
+		// for a given file path as long as the relative path to the target
+		// directory is always the same across runs.
 		hasher.Write([]byte(relPath))
 		resourceName := fmt.Sprintf("%x", hasher.Sum(nil))
 
 		resourcesMap[resourceName] = map[string]interface{}{
-			"bucket": bucketName,
-			"key":    relPath,
-			"source": path,
+			"bucket":       bucketName,
+			"key":          relPath,
+			"source":       path,
+			"etag":         fmt.Sprintf("${md5(file(%q))}", path),
 			"content_type": contentType,
 		}
 

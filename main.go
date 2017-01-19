@@ -106,6 +106,10 @@ func main() {
 			// If we start to need a set of overrides for DetectContentType
 			// then we need to find a different way to do this.
 			contentType = "image/svg+xml"
+		} else if strings.HasSuffix(relPath, ".css") {
+			// If we start to need a set of overrides for DetectContentType
+			// then we need to find a different way to do this.
+			contentType = "text/css"
 		} else {
 			contentType = http.DetectContentType(fileBytes)
 		}

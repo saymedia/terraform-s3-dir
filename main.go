@@ -125,6 +125,7 @@ func main() {
 			"key":          relPath,
 			"source":       path,
 			"etag":         fmt.Sprintf("${md5(file(%q))}", path),
+			"acl": "public-read",
 			"content_type": contentType,
 		}
 

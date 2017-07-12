@@ -128,6 +128,9 @@ func main() {
 			"source":       modulePath,
 			"etag":         fmt.Sprintf("${md5(file(%q))}", modulePath),
 			"content_type": contentType,
+			"lifecycle": map[string][1]string{
+				"ignore_changes": {"source"},
+			},
 		}
 
 		return nil

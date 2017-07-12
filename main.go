@@ -120,12 +120,17 @@ func main() {
 		hasher.Write([]byte(relPath))
 		resourceName := fmt.Sprintf("%x", hasher.Sum(nil))
 
+		modulePath := fmt.Sprintf("${path.module}/%s", path)
+
 		resourcesMap[resourceName] = map[string]interface{}{
 			"bucket":       bucketName,
 			"key":          relPath,
-			"source":       path,
-			"etag":         fmt.Sprintf("${md5(file(%q))}", path),
+			"source":       modulePath,
+			"etag":         fmt.Sprintf("${md5(file(%q))}", modulePath),
 			"content_type": contentType,
+			"lifecycle": map[string][1]string{
+				"ignore_changes": {"source"},
+			},
 		}
 
 		return nil

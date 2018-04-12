@@ -14,6 +14,7 @@ import (
 )
 
 var exclude = getopt.ListLong("exclude", 'x', "", "glob patterns to exclude")
+var hcloutput = getopt.Bool('t', "print output in hcl")
 var help = getopt.BoolLong("help", 'h', "", "print this help")
 
 func main() {
@@ -131,6 +132,11 @@ func main() {
 		return nil
 	})
 
+	if *hcloutput {
+		hcl := Hcl{}
+		hcl.Encode(result)
+		return
+	}
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.Encode(result)
 }

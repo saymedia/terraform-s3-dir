@@ -14,6 +14,7 @@ import (
 )
 
 var exclude = getopt.ListLong("exclude", 'x', "", "glob patterns to exclude")
+var acl = getopt.StringLong("acl", 'a', "private", "acl to set on files")
 var help = getopt.BoolLong("help", 'h', "", "print this help")
 
 func main() {
@@ -126,6 +127,7 @@ func main() {
 			"source":       path,
 			"etag":         fmt.Sprintf("${md5(file(%q))}", path),
 			"content_type": contentType,
+			"acl":          acl,
 		}
 
 		return nil
